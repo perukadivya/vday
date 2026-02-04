@@ -1121,7 +1121,6 @@ function setupLoveCard() {
 initAIMagic();
 
 function initAIMagic() {
-    setupAPIKeyModal();
     setupPoemGenerator();
     setupStoryGenerator();
 }

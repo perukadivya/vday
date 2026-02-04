@@ -1146,20 +1146,39 @@ async function callGeminiAPI(prompt) {
         });
 
         console.log('📥 Response status:', response.status);
+        console.log('📥 Response ok:', response.ok);
 
-        if (!response.ok) {
-            const error = await response.json();
-            console.error('❌ API Error:', error);
-            throw new Error(error.error || "API request failed");
+        // Try to get response text first for debugging
+        const responseText = await response.text();
+        console.log('📥 Response text:', responseText.substring(0, 200));
+
+        // Parse as JSON
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('❌ JSON Parse Error:', parseError);
+            throw new Error('Server returned invalid response: ' + responseText.substring(0, 100));
         }
 
-        const data = await response.json();
-        console.log('✅ API Response received');
-        console.log('📄 Generated text:', data.result.substring(0, 100) + '...');
+        if (!response.ok) {
+            console.error('❌ API Error:', data);
+            throw new Error(data.error || `API request failed with status ${response.status}`);
+        }
 
+        console.log('✅ API Response received');
+
+        if (!data.result) {
+            throw new Error('No result in API response');
+        }
+
+        console.log('📄 Generated text:', data.result.substring(0, 100) + '...');
         return data.result;
+
     } catch (error) {
         console.error('❌ Gemini API Error:', error);
+        // Show error in an alert for debugging on Vercel
+        console.error('Full error details:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
         throw error;
     }
 }

@@ -564,12 +564,13 @@ function setupMusicPlayer() {
     let isPlaying = false;
 
     // Try autoplay (might be blocked by browser)
-    document.body.addEventListener('click', function () {
-        if (!isPlaying && bgMusic.paused) {
-            // Auto-play on first interaction
-            toggleMusic();
-        }
-    }, { once: true });
+    // Autoplay disabled by default
+    // document.body.addEventListener('click', function () {
+    //    if (!isPlaying && bgMusic.paused) {
+    //        // Auto-play on first interaction
+    //        toggleMusic();
+    //    }
+    // }, { once: true });
 
     playPauseBtn.addEventListener('click', toggleMusic);
 

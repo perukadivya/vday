@@ -1004,7 +1004,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding-left: 2px;
     /* Visual center adjustment for play icon */
 }
 

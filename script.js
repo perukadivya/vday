@@ -566,8 +566,8 @@ function setupMusicPlayer() {
     // Try autoplay (might be blocked by browser)
     document.body.addEventListener('click', function () {
         if (!isPlaying && bgMusic.paused) {
-            // Optional: Auto-play on first interaction
-            // toggleMusic(); 
+            // Auto-play on first interaction
+            toggleMusic();
         }
     }, { once: true });
 

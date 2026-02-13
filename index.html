@@ -108,16 +108,54 @@
                 </div>
 
                 <div class="form-group optional-group">
-                    <label class="form-label">📷 Special Photo <span class="optional-tag">(Optional)</span></label>
-                    <div class="file-upload-wrapper">
-                        <input type="file" id="customPhoto" accept="image/*" class="file-input">
-                        <label for="customPhoto" class="file-upload-btn">
-                            <span class="upload-icon">🖼️</span>
-                            <span class="upload-text" id="photoFileName">Choose image...</span>
-                        </label>
-                    </div>
-                    <div class="photo-preview hidden" id="photoPreview">
-                        <img id="previewImage" alt="Preview">
+                    <label class="form-label">📷 Our Photos <span class="optional-tag">(Optional — up to
+                            3)</span></label>
+
+                    <div class="photo-upload-grid">
+                        <div class="photo-upload-item">
+                            <div class="file-upload-wrapper">
+                                <input type="file" id="customPhoto1" accept="image/*" class="file-input">
+                                <label for="customPhoto1" class="file-upload-btn compact">
+                                    <span class="upload-icon">🖼️</span>
+                                    <span class="upload-text" id="photoFileName1">Photo 1</span>
+                                </label>
+                            </div>
+                            <div class="photo-preview hidden" id="photoPreview1">
+                                <img id="previewImage1" alt="Preview 1">
+                                <button type="button" class="photo-remove-btn" data-photo="1">✕</button>
+                            </div>
+                            <span class="photo-caption">The Beginning of Us</span>
+                        </div>
+
+                        <div class="photo-upload-item">
+                            <div class="file-upload-wrapper">
+                                <input type="file" id="customPhoto2" accept="image/*" class="file-input">
+                                <label for="customPhoto2" class="file-upload-btn compact">
+                                    <span class="upload-icon">🖼️</span>
+                                    <span class="upload-text" id="photoFileName2">Photo 2</span>
+                                </label>
+                            </div>
+                            <div class="photo-preview hidden" id="photoPreview2">
+                                <img id="previewImage2" alt="Preview 2">
+                                <button type="button" class="photo-remove-btn" data-photo="2">✕</button>
+                            </div>
+                            <span class="photo-caption">Our Adventures Together</span>
+                        </div>
+
+                        <div class="photo-upload-item">
+                            <div class="file-upload-wrapper">
+                                <input type="file" id="customPhoto3" accept="image/*" class="file-input">
+                                <label for="customPhoto3" class="file-upload-btn compact">
+                                    <span class="upload-icon">🖼️</span>
+                                    <span class="upload-text" id="photoFileName3">Photo 3</span>
+                                </label>
+                            </div>
+                            <div class="photo-preview hidden" id="photoPreview3">
+                                <img id="previewImage3" alt="Preview 3">
+                                <button type="button" class="photo-remove-btn" data-photo="3">✕</button>
+                            </div>
+                            <span class="photo-caption">Our Happy Moments</span>
+                        </div>
                     </div>
                 </div>
 
@@ -358,60 +396,27 @@
                 <p class="section-subtitle">Snapshots of our beautiful love story...</p>
             </div>
 
-            <div class="gallery-container">
-                <button class="gallery-nav prev" id="prevSlide">❮</button>
-                <div class="gallery-track-container">
-                    <ul class="gallery-track" id="galleryTrack">
-                        <li class="gallery-slide current-slide">
-                            <div class="polaroid">
-                                <div class="photo-placeholder">
-                                    <span>Add photo: images/us1.jpg</span>
-                                    <div class="photo-icon">💑</div>
-                                </div>
-                                <div class="caption">The Beginning of Us</div>
-                            </div>
-                        </li>
-                        <li class="gallery-slide">
-                            <div class="polaroid">
-                                <div class="photo-placeholder">
-                                    <span>Add photo: images/us2.jpg</span>
-                                    <div class="photo-icon">✈️</div>
-                                </div>
-                                <div class="caption">Our First Adventure</div>
-                            </div>
-                        </li>
-                        <li class="gallery-slide">
-                            <div class="polaroid">
-                                <div class="photo-placeholder">
-                                    <span>Add photo: images/us3.jpg</span>
-                                    <div class="photo-icon">🎉</div>
-                                </div>
-                                <div class="caption">Celebration Time</div>
-                            </div>
-                        </li>
-                        <li class="gallery-slide">
-                            <div class="polaroid">
-                                <div class="photo-placeholder">
-                                    <span>Add photo: images/us4.jpg</span>
-                                    <div class="photo-icon">🏠</div>
-                                </div>
-                                <div class="caption">Building Our Home</div>
-                            </div>
-                        </li>
-                        <li class="gallery-slide">
-                            <div class="polaroid">
-                                <div class="photo-placeholder">
-                                    <span>Add photo: images/us5.jpg</span>
-                                    <div class="photo-icon">💍</div>
-                                </div>
-                                <div class="caption">Forever & Always</div>
-                            </div>
-                        </li>
-                    </ul>
+            <div class="gallery-container" id="galleryContainer">
+                <!-- Empty state (shown when no photos uploaded) -->
+                <div class="gallery-empty" id="galleryEmpty">
+                    <div class="gallery-empty-icon">📷</div>
+                    <h3>No Photos Yet</h3>
+                    <p>Upload your special photos in the welcome screen to see them here!</p>
+                    <button class="btn-restart" id="reopenWelcome">📸 Add Photos</button>
                 </div>
-                <button class="gallery-nav next" id="nextSlide">❯</button>
+
+                <!-- Gallery carousel (shown when photos exist) -->
+                <div class="gallery-carousel hidden" id="galleryCarousel">
+                    <button class="gallery-nav prev" id="prevSlide">❮</button>
+                    <div class="gallery-track-container">
+                        <ul class="gallery-track" id="galleryTrack">
+                            <!-- Slides populated by JavaScript -->
+                        </ul>
+                    </div>
+                    <button class="gallery-nav next" id="nextSlide">❯</button>
+                </div>
+                <div class="gallery-dots hidden" id="galleryDots"></div>
             </div>
-            <div class="gallery-dots" id="galleryDots"></div>
         </div>
     </section>
 

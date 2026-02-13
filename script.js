@@ -592,54 +592,106 @@ function setupMusicPlayer() {
 // 2. Photo Gallery
 function setupGallery() {
     const track = document.getElementById('galleryTrack');
-    const slides = Array.from(track.children);
     const nextBtn = document.getElementById('nextSlide');
     const prevBtn = document.getElementById('prevSlide');
     const dotsNav = document.getElementById('galleryDots');
+    const galleryEmpty = document.getElementById('galleryEmpty');
+    const galleryCarousel = document.getElementById('galleryCarousel');
+    const reopenBtn = document.getElementById('reopenWelcome');
 
     let currentIndex = 0;
 
-    // Create dots
-    slides.forEach((_, index) => {
-        const dot = document.createElement('div');
-        dot.classList.add('gallery-dot');
-        if (index === 0) dot.classList.add('active-dot');
-        dot.addEventListener('click', () => goToSlide(index));
-        dotsNav.appendChild(dot);
-    });
+    const photoCaptions = [
+        'The Beginning of Us 💑',
+        'Our Adventures Together ✈️',
+        'Our Happy Moments 🎉'
+    ];
 
-    const dots = Array.from(dotsNav.children);
+    // Reopen welcome modal button
+    if (reopenBtn) {
+        reopenBtn.addEventListener('click', () => {
+            showWelcomeModal();
+        });
+    }
 
-    function goToSlide(index) {
-        // Handle wrap-around
-        if (index < 0) index = slides.length - 1;
-        if (index >= slides.length) index = 0;
+    // Build gallery from localStorage photos
+    function buildGallery() {
+        track.innerHTML = '';
+        dotsNav.innerHTML = '';
+        const photos = [];
 
-        currentIndex = index;
+        for (let i = 1; i <= 3; i++) {
+            const photoData = localStorage.getItem('customPhoto' + i);
+            if (photoData) {
+                photos.push({ data: photoData, caption: photoCaptions[i - 1] });
+            }
+        }
 
-        // Update slides class
-        slides.forEach((slide, i) => {
-            slide.classList.remove('current-slide');
-            if (i === currentIndex) slide.classList.add('current-slide');
+        if (photos.length === 0) {
+            galleryEmpty.classList.remove('hidden');
+            galleryCarousel.classList.add('hidden');
+            dotsNav.classList.add('hidden');
+            return;
+        }
+
+        galleryEmpty.classList.add('hidden');
+        galleryCarousel.classList.remove('hidden');
+        dotsNav.classList.remove('hidden');
+
+        photos.forEach((photo, index) => {
+            const slide = document.createElement('li');
+            slide.className = 'gallery-slide';
+            slide.innerHTML = `
+                <div class="polaroid">
+                    <img src="${photo.data}" alt="${photo.caption}">
+                    <div class="caption">${photo.caption}</div>
+                </div>
+            `;
+            track.appendChild(slide);
+
+            const dot = document.createElement('div');
+            dot.classList.add('gallery-dot');
+            if (index === 0) dot.classList.add('active-dot');
+            dot.addEventListener('click', () => goToSlide(index));
+            dotsNav.appendChild(dot);
         });
 
-        // Move track (optional if using absolute positioning fade, but good for slide effect)
-        // track.style.transform = 'translateX(-' + (currentIndex * 100) + '%)'; 
-        // Using opacity transition defined in CSS for .current-slide
+        currentIndex = 0;
+        updateTrackPosition();
+    }
 
-        // Update dots
+    function goToSlide(index) {
+        const slides = Array.from(track.children);
+        if (slides.length === 0) return;
+        if (index < 0) index = slides.length - 1;
+        if (index >= slides.length) index = 0;
+        currentIndex = index;
+        updateTrackPosition();
+
+        const dots = Array.from(dotsNav.children);
         dots.forEach(dot => dot.classList.remove('active-dot'));
-        dots[currentIndex].classList.add('active-dot');
+        if (dots[currentIndex]) dots[currentIndex].classList.add('active-dot');
+    }
+
+    function updateTrackPosition() {
+        track.style.transform = 'translateX(-' + (currentIndex * 100) + '%)';
     }
 
     nextBtn.addEventListener('click', () => goToSlide(currentIndex + 1));
     prevBtn.addEventListener('click', () => goToSlide(currentIndex - 1));
 
-    // Auto advance
+    // Auto advance every 5s
     setInterval(() => {
-        // Only if not hovering (optional refinement)
-        goToSlide(currentIndex + 1);
+        if (track.children.length > 0) {
+            goToSlide(currentIndex + 1);
+        }
     }, 5000);
+
+    // Build on init
+    buildGallery();
+
+    // Expose rebuild for after photo upload
+    window.rebuildGallery = buildGallery;
 }
 
 // 3. Interactive Hearts
@@ -1302,7 +1354,6 @@ function checkURLParams() {
         const savedName = localStorage.getItem('recipientName');
         if (savedName) {
             setRecipientName(savedName);
-            setRecipientName(savedName);
 
             // Load saved date
             const savedDate = localStorage.getItem('anniversaryDate');
@@ -1317,17 +1368,14 @@ function checkURLParams() {
         }
     }
 
-    // Load saved custom photo if exists
-    const savedPhoto = localStorage.getItem('customPhoto');
-    if (savedPhoto) {
-        displayCustomPhoto(savedPhoto);
-    }
-
     // Load saved custom music if exists
     const savedMusic = localStorage.getItem('customMusic');
     if (savedMusic) {
         loadCustomMusic(savedMusic);
     }
+
+    // Display saved photo in Love Song section
+    displayCustomPhoto();
 }
 
 // Welcome Modal Setup
@@ -1336,17 +1384,13 @@ function setupWelcomeModal() {
     const recipientNameInput = document.getElementById('recipientName');
     const startBtn = document.getElementById('startExperience');
     const customMusicInput = document.getElementById('customMusic');
-    const customPhotoInput = document.getElementById('customPhoto');
     const musicFileName = document.getElementById('musicFileName');
-    const photoFileName = document.getElementById('photoFileName');
-    const photoPreview = document.getElementById('photoPreview');
-    const previewImage = document.getElementById('previewImage');
+
+    const anniversaryInput = document.getElementById('anniversaryDate');
 
     // Temp storage for files
     let tempMusicData = null;
-    let tempPhotoData = null;
-
-    const anniversaryInput = document.getElementById('anniversaryDate');
+    let tempPhotoData = [null, null, null];
 
     // Validation function
     function validateInputs() {
@@ -1372,20 +1416,58 @@ function setupWelcomeModal() {
         }
     });
 
-    // Handle photo file selection
-    customPhotoInput.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            photoFileName.textContent = file.name;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                tempPhotoData = event.target.result;
-                previewImage.src = event.target.result;
-                photoPreview.classList.remove('hidden');
-            };
-            reader.readAsDataURL(file);
+    // Handle 3 photo inputs
+    for (let i = 1; i <= 3; i++) {
+        const input = document.getElementById('customPhoto' + i);
+        const fileNameEl = document.getElementById('photoFileName' + i);
+        const previewEl = document.getElementById('photoPreview' + i);
+        const previewImg = document.getElementById('previewImage' + i);
+        const removeBtn = previewEl ? previewEl.querySelector('.photo-remove-btn') : null;
+
+        if (input) {
+            input.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    fileNameEl.textContent = file.name.substring(0, 10) + '...';
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        tempPhotoData[i - 1] = event.target.result;
+                        previewImg.src = event.target.result;
+                        previewEl.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
         }
-    });
+
+        if (removeBtn) {
+            removeBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                tempPhotoData[i - 1] = null;
+                previewEl.classList.add('hidden');
+                previewImg.src = '';
+                fileNameEl.textContent = 'Photo ' + i;
+                if (input) input.value = '';
+            });
+        }
+    }
+
+    // Load existing photos from localStorage into previews
+    for (let i = 1; i <= 3; i++) {
+        const saved = localStorage.getItem('customPhoto' + i);
+        if (saved) {
+            tempPhotoData[i - 1] = saved;
+            const previewEl = document.getElementById('photoPreview' + i);
+            const previewImg = document.getElementById('previewImage' + i);
+            const fileNameEl = document.getElementById('photoFileName' + i);
+            if (previewEl && previewImg) {
+                previewImg.src = saved;
+                previewEl.classList.remove('hidden');
+                fileNameEl.textContent = '✓ Saved';
+            }
+        }
+    }
 
     // Start experience button
     startBtn.addEventListener('click', () => {
@@ -1413,15 +1495,25 @@ function setupWelcomeModal() {
                 }
             }
 
-            // Handle custom photo
-            if (tempPhotoData) {
-                try {
-                    localStorage.setItem('customPhoto', tempPhotoData);
-                    displayCustomPhoto(tempPhotoData);
-                } catch (e) {
-                    console.log('Photo too large for localStorage');
+            // Handle custom photos (save each separately)
+            for (let i = 0; i < 3; i++) {
+                if (tempPhotoData[i]) {
+                    try {
+                        localStorage.setItem('customPhoto' + (i + 1), tempPhotoData[i]);
+                    } catch (e) {
+                        console.log('Photo ' + (i + 1) + ' too large for localStorage');
+                    }
+                } else {
+                    // Remove if cleared
+                    localStorage.removeItem('customPhoto' + (i + 1));
                 }
             }
+
+            // Also display in Love Song section
+            displayCustomPhoto();
+
+            // Rebuild gallery with new photos
+            if (window.rebuildGallery) window.rebuildGallery();
 
             // Update URL without reload
             updateURLWithName(name);
@@ -1471,14 +1563,23 @@ function loadCustomMusic(musicData) {
     }
 }
 
-// Display custom photo
-function displayCustomPhoto(photoData) {
+// Display custom photo in Love Song section (uses first available photo)
+function displayCustomPhoto() {
     const photoDisplay = document.getElementById('customPhotoDisplay');
     const displayPhoto = document.getElementById('displayPhoto');
 
-    if (photoDisplay && displayPhoto && photoData) {
-        displayPhoto.src = photoData;
-        photoDisplay.classList.remove('hidden');
+    if (photoDisplay && displayPhoto) {
+        // Find the first available photo
+        for (let i = 1; i <= 3; i++) {
+            const photoData = localStorage.getItem('customPhoto' + i);
+            if (photoData) {
+                displayPhoto.src = photoData;
+                photoDisplay.classList.remove('hidden');
+                return;
+            }
+        }
+        // No photos found
+        photoDisplay.classList.add('hidden');
     }
 }
 
